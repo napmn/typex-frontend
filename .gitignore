@@ -1,4 +1,8 @@
+# Custom
 .vscode/
+.env/*
+!.env/template.env
+.eslintcache
 
 # dependencies
 /node_modules

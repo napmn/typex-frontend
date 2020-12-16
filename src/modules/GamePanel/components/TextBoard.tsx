@@ -9,19 +9,35 @@ const useStyles = makeStyles({
   }
 });
 
-const TextBoard: React.FC = () => {
-  const classes = useStyles();
-  const text = `
-  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-  Proin dignissim diam ac lorem volutpat, placerat posuere augue aliquam.
-  Praesent pharetra justo in nunc pretium, vel malesuada ante congue.
-  Mauris vulputate libero ac justo porta malesuada. Ut vel ipsum sit amet
-  nisi elementum finibus sed ac erat. Vestibulum vel sagittis dolor.
-  `;
+interface TextBoardProps {
+  finishedTokens: Array<string>;
+  activeToken: string;
+  activeLetterIndex: number;
+  remainingTokens: Array<string>;
+  errorIndex: number;
+}
 
+const TextBoard: React.FC<TextBoardProps> = ({
+  finishedTokens,
+  activeToken,
+  activeLetterIndex,
+  remainingTokens,
+  errorIndex
+}: TextBoardProps) => { // TODO: check this, why do I need to specify type again?
+  const classes = useStyles();
+
+  console.log(errorIndex);
+  // TODO: optimize this later
+  const finishedPart = activeToken.substring(0, activeLetterIndex);
+  const unfinishedPart = activeToken.substring(activeLetterIndex);
+
+  // TODO: optimize rerenders?
   return (
     <Card className={classes.card}>
-      <Typography>{text}</Typography>
+      <Typography component="span" color="secondary">{finishedTokens.join('')}</Typography>
+      <Typography component="span" color="secondary">{finishedPart}</Typography>
+      <Typography component="span" color="primary">{unfinishedPart}</Typography>
+      <Typography component="span">{remainingTokens.join('')}</Typography>
     </Card>
   );
 };

@@ -26,16 +26,23 @@ const TextBoard: React.FC<TextBoardProps> = ({
 }: TextBoardProps) => { // TODO: check this, why do I need to specify type again?
   const classes = useStyles();
 
-  console.log(errorIndex);
-  // TODO: optimize this later
-  const finishedPart = activeToken.substring(0, activeLetterIndex);
-  const unfinishedPart = activeToken.substring(activeLetterIndex);
+  let finishedPart;
+  let unfinishedPart;
+  let erroredPart = '';
+  if (errorIndex !== -1) {
+    finishedPart = activeToken.substring(0, errorIndex);
+    erroredPart = activeToken.substring(errorIndex, activeLetterIndex);
+    unfinishedPart = activeToken.substring(activeLetterIndex);
+  } else {
+    finishedPart = activeToken.substring(0, activeLetterIndex);
+    unfinishedPart = activeToken.substring(activeLetterIndex);
+  }
 
-  // TODO: optimize rerenders?
   return (
     <Card className={classes.card}>
       <Typography component="span" color="secondary">{finishedTokens.join('')}</Typography>
       <Typography component="span" color="secondary">{finishedPart}</Typography>
+      <Typography component="span" color="textPrimary">{erroredPart}</Typography>
       <Typography component="span" color="primary">{unfinishedPart}</Typography>
       <Typography component="span">{remainingTokens.join('')}</Typography>
     </Card>

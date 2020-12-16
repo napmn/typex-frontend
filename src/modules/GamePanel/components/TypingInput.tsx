@@ -6,6 +6,7 @@ interface TypingInputProps {
   activeToken: string;
   setActiveLetterIndex: React.Dispatch<SetStateAction<number>>;
   jumpToNextWord: () => void;
+  errorIndex: number;
   setErrorIndex: React.Dispatch<SetStateAction<number>>;
 }
 
@@ -13,6 +14,7 @@ const TypingInput: React.FC<TypingInputProps> = ({
   activeToken,
   setActiveLetterIndex,
   jumpToNextWord,
+  errorIndex,
   setErrorIndex
 }: TypingInputProps) => {
   const [inputValue, setInputValue ] = useState('');
@@ -32,14 +34,20 @@ const TypingInput: React.FC<TypingInputProps> = ({
       }
     });
     setActiveLetterIndex(inputValue.length);
-    if (inputValue === activeToken) {
+    if (inputValue === activeToken && activeToken !== '') {
       setInputValue('');
       jumpToNextWord();
     }
   }, [inputValue, activeToken]);
 
   return (
-    <Input onChange={(e) => setInputValue(e.target.value)} value={inputValue}/>
+    <Input
+      onChange={(e) => setInputValue(e.target.value)} value={inputValue}
+      fullWidth
+      autoFocus
+      error={errorIndex !== -1}
+      placeholder="Type here..."
+    />
   );
 };
 

@@ -1,68 +1,115 @@
 import React, { useEffect, useState } from 'react';
 import Container from '@material-ui/core/Container';
+import Box from '@material-ui/core/Box';
 
 import { TextBoard, TypingInput } from '../components';
+import { randomText } from '../../shared/services';
 
-const text = `
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-    Proin dignissim diam ac lorem volutpat, placerat posuere augue aliquam.
-    Praesent pharetra justo in nunc pretium, vel malesuada ante congue.
-    Mauris vulputate libero ac justo porta malesuada. Ut vel ipsum sit amet
-    nisi elementum finibus sed ac erat. Vestibulum vel sagittis dolor.
-    `;
 
 const GamePanelView: React.FC = () => {
+  const [ isFinished, setIsFinished ] = useState<boolean>(false);
+
+  // Hooks for text partitioning
+  const [ text ] = useState<string>(randomText()); // TODO: setText
   const [ activeToken, setActiveToken ] = useState<string>('');
   const [ finishedTokens, setFinishedTokens ] = useState<Array<string>>([]);
   const [ activeLetterIndex, setActiveLetterIndex ] = useState<number>(0);
   const [ remainingTokens, setRemainingTokens ] = useState<Array<string>>([]);
+
+  // Errors hooks
   const [ errorIndex, setErrorIndex ] = useState<number>(-1);
+  const [ errorsNumber, setErrorsNumber ] = useState<number>(0);
+
+  // CPM / WPM hooks
+  const [ typedCharactersNumber, setTypedCharactersNumber ] = useState<number>(0);
+  const [ typingStartTime ] = useState<Date>(new Date()); // TODO: setTypingStartTime
+  const [ cpm, setCpm ] = useState<number>(0);
+  const [ accuracy, setAccuracy ] = useState<number>(100);
+
 
   useEffect(() => {
+    // set up tokens on text change
     let tokens = text.replace(/\s+/g, ' ').trim().split(' ');
     tokens = tokens.map(
-      (token, index) => index === tokens.length + 1 ? token : `${token} `
+      (token, index) => index === tokens.length - 1 ? token : `${token} `
     );
     setActiveToken(tokens[0]);
     tokens.splice(0, 1);
     setRemainingTokens(tokens);
-  }, []); // TODO: dependency text
+  }, [text]);
+
+  useEffect(() => {
+    // logic when the typing is finished
+    if (isFinished === true) {
+      console.log('FINISHED');
+      setAccuracy(calculateAccuracy());
+    }
+  }, [isFinished]);
 
   useEffect(() => {
     setActiveLetterIndex(0);
   }, [activeToken]);
 
+  useEffect(() => {
+    setCpm(calculateCpm());
+  }, [typedCharactersNumber]);
+
+  useEffect(() => {
+    if (errorIndex !== -1) {
+      // error was made -> increasing counter
+      setErrorsNumber(n => n + 1);
+    }
+  }, [errorIndex]);
+
+  const calculateCpm = (): number => {
+    const now = new Date();
+    const res = now.getTime() - typingStartTime.getTime();
+    return typedCharactersNumber / (res / 1000 / 60);
+  };
+
+  const calculateAccuracy = (): number => {
+    return (text.length - errorsNumber) / text.length * 100;
+  };
+
   const jumpToNextWord = () => {
+    // move one word forward
+    setFinishedTokens(tokens => {
+      return [...tokens, activeToken];
+    });
+    setRemainingTokens(tokens => {
+      return tokens.slice(1);
+    });
+    setTypedCharactersNumber(n => n + activeToken.length);
     if (remainingTokens.length > 0) {
-      // move one word forward
-      setFinishedTokens(tokens => {
-        return [...tokens, activeToken];
-      });
-      // if it's not the last token add space to it
       setActiveToken(remainingTokens[0]);
-      setRemainingTokens(tokens => {
-        return tokens.slice(1);
-      });
     } else {
-      // TODO: whole text is finished
+      setActiveToken("");
+      setIsFinished(true);
     }
   };
 
   return (
     <Container maxWidth="sm">
-      <TextBoard
-        finishedTokens={finishedTokens}
-        activeToken={activeToken}
-        activeLetterIndex={activeLetterIndex}
-        remainingTokens={remainingTokens}
-        errorIndex={errorIndex}
-      />
-      <TypingInput
-        activeToken={activeToken}
-        setActiveLetterIndex={setActiveLetterIndex}
-        jumpToNextWord={jumpToNextWord}
-        setErrorIndex={setErrorIndex}
-      />
+      <Box>
+        <TextBoard
+          finishedTokens={finishedTokens}
+          activeToken={activeToken}
+          activeLetterIndex={activeLetterIndex}
+          remainingTokens={remainingTokens}
+          errorIndex={errorIndex}
+        />
+        <TypingInput
+          activeToken={activeToken}
+          setActiveLetterIndex={setActiveLetterIndex}
+          jumpToNextWord={jumpToNextWord}
+          errorIndex={errorIndex}
+          setErrorIndex={setErrorIndex}
+        />
+        <div>CPM: {cpm.toFixed(0)}</div>
+        <div>WPM: {(cpm / 5).toFixed(0)}</div>
+        <div>Accuracy: {accuracy.toFixed(2)}%</div>
+      </Box>
+
     </Container>
   );
 };

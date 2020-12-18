@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import Card from '@material-ui/core/Card';
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -21,7 +22,13 @@ const GameTypeCard: React.FC<GameTypeCardProps> = ({
   const classes = useStyles();
 
   return (
-    <Card className={classes.card}>{gameType.verboseName}</Card>
+    <Link to={gameType.path}>
+      <Card
+        className={classes.card}
+      >
+        {gameType.verboseName}
+      </Card>
+    </Link>
   );
 };
 

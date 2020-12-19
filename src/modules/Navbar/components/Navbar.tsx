@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import firebase from 'firebase/app';
 import { Link, useHistory } from 'react-router-dom';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import AppBar from '@material-ui/core/AppBar';
@@ -11,10 +12,11 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Toolbar from '@material-ui/core/Toolbar';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 
-import { authProviders, gameTypes } from '../../shared/const';
-import { TAuthProvider } from 'modules/shared/types';
-import { useLoggedInUser } from '../../shared/utils/firebase';
 import { UsernameDialog } from '../../shared/components';
+import { authProviders, gameTypes } from '../../shared/const';
+import { useLoggedInUser } from '../../shared/hooks';
+import { firebaseService } from '../../shared/services';
+import { TAuthProvider } from 'modules/shared/types';
 
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -39,6 +41,7 @@ const Navbar: React.FC = () => {
   const history = useHistory();
   const [ playAnchorEl, setPlayAnchorEl ] = useState<null | HTMLElement>(null);
   const [ singInAnchorEl, setSignInAnchorEl ] = useState<null | HTMLElement>(null);
+  const [ profileAnchorEl, setProfileAnchorEl ] = useState<null | HTMLElement>(null);
   const [ usernameDialogOpened, setUsernameDialogOpened ] = useState<boolean>(false);
 
   const { user, signIn, signOut } = useLoggedInUser();
@@ -59,7 +62,15 @@ const Navbar: React.FC = () => {
 
   const handleSignIn = (authProvider: TAuthProvider) => {
     setSignInAnchorEl(null);
-    signIn(authProvider.provider).then(() => {
+    signIn(authProvider.provider).then((result: firebase.auth.UserCredential) => {
+      if (result.user?.displayName) {
+        // TODO: success alert
+        // user has already set username
+        return;
+      }
+      // store user id to users collection
+      firebaseService.saveUser(result.user!.uid);
+
       // user was registered, let him enter username
       setUsernameDialogOpened(true);
     }).catch(error => {
@@ -109,7 +120,7 @@ const Navbar: React.FC = () => {
     return (
       <>
         <Button
-          onClick={() => signOut()}
+          onClick={(e: React.MouseEvent<HTMLElement>) => setProfileAnchorEl(e.currentTarget)}
           // TODO: default icon??
           endIcon={
             <Avatar
@@ -119,8 +130,40 @@ const Navbar: React.FC = () => {
             />
           }
         >
-          {user?.displayName || user?.providerData[0]?.displayName}
+          {user?.displayName || user?.email}
         </Button>
+        <Menu
+          anchorEl={profileAnchorEl}
+          open={!!profileAnchorEl}
+          onClose={() => setProfileAnchorEl(null)}
+          keepMounted
+          getContentAnchorEl={null}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'center',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'center',
+          }}
+        >
+          <MenuItem
+            onClick={() => {
+              setProfileAnchorEl(null);
+              setUsernameDialogOpened(true);
+            }}
+          >
+            Change Username
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              setProfileAnchorEl(null);
+              signOut();
+            }}
+          >
+            Sign Out
+          </MenuItem>
+        </Menu>
       </>
     );
   };
@@ -130,6 +173,9 @@ const Navbar: React.FC = () => {
       <AppBar className={classes.navbar} position="static">
         <Toolbar className={classes.toolbar}>
           <div>
+            <Button onClick={() => {
+
+            }}>skuska</Button>
             <Link to="/">
               <Button>Home</Button>
             </Link>

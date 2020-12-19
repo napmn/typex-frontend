@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   Redirect,
   Route,
@@ -18,7 +18,6 @@ import { HomeView } from './modules/Home';
 import { LeaderBoardView } from './modules/LeaderBoard';
 import { Navbar } from './modules/Navbar';
 import { gameTypes } from 'modules/shared/const';
-import { useLoggedInUser } from './modules/shared/utils/firebase';
 
 const theme = createMuiTheme({
   palette: {
@@ -41,14 +40,6 @@ const useStyles = makeStyles({
 
 function App() {
   const classes = useStyles();
-
-  // const { user, additionalInfo } = useLoggedInUser();
-  const { user } = useLoggedInUser();
-
-  useEffect(() => {
-    console.log('user changed');
-    console.log(user);
-  }, [user]);
 
   return (
     <MuiThemeProvider theme={theme}>

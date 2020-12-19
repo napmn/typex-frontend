@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, AlertTitle } from '@material-ui/lab';
+// import { Alert, AlertTitle } from '@material-ui/lab';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -8,7 +8,7 @@ import DialogContent from '@material-ui/core/DialogTitle';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import TextField from '@material-ui/core/TextField';
 
-import { useLoggedInUser } from '../utils/firebase';
+import { useLoggedInUser } from '../hooks';
 
 type UsernameDialogProps = {
   open: boolean;
@@ -33,8 +33,12 @@ const UsernameDialog: React.FC<UsernameDialogProps> = ({
   }, [username]);
 
   const handleClose = () => {
-    // TODO add warning alert
-    onClose();
+    user?.updateProfile({ displayName: user.email }).then(() => {
+      // TODO: warning alert
+    }).catch(error => {
+      console.error(error);
+      // TODO: error alert
+    }).finally(() => onClose());
   };
 
   const handleSubmit = () => {
@@ -79,10 +83,10 @@ const UsernameDialog: React.FC<UsernameDialogProps> = ({
           </Button>
         </DialogActions>
       </Dialog>
-      <Alert severity="warning">
+      {/* <Alert severity="warning">
         <AlertTitle>Warning</AlertTitle>
         This is a warning alert — <strong>check it out!</strong>
-      </Alert>
+      </Alert> */}
     </>
   );
 };

@@ -3,7 +3,7 @@ import Container from '@material-ui/core/Container';
 
 import { TextBoard, TypingInput } from '../components';
 import { TGameType } from '../../shared/types';
-import { getTextByGameVariation } from '../../shared/services';
+import { firebaseService } from '../../shared/services';
 
 
 type GamePanelViewProps = {
@@ -28,12 +28,18 @@ const GamePanelView: React.FC<GamePanelViewProps> = ({
 
   // CPM / WPM hooks
   const [ typedCharactersNumber, setTypedCharactersNumber ] = useState<number>(0);
-  const [ typingStartTime ] = useState<Date>(new Date()); // TODO: setTypingStartTime
+  const [ typingStartTime, setTypingStartTime ] = useState<Date>(); // TODO: setTypingStartTime
   const [ cpm, setCpm ] = useState<number>(0);
   const [ accuracy, setAccuracy ] = useState<number>(100);
 
   useEffect(() => {
-    setText(getTextByGameVariation(gameType.name));
+    console.log('check for initial states');
+    console.log(text, activeToken, finishedTokens, activeLetterIndex, remainingTokens,
+      errorIndex, errorsNumber, typedCharactersNumber, typingStartTime, cpm, accuracy);
+    // load random text base on game type
+    firebaseService.getTextByGameVariation(gameType.name).then((data) => {
+      setText(data.content);
+    });
   }, []);
 
   useEffect(() => {
@@ -65,6 +71,14 @@ const GamePanelView: React.FC<GamePanelViewProps> = ({
   }, [typedCharactersNumber]);
 
   useEffect(() => {
+    // start counting the typing time after first keystroke
+    if (finishedTokens.length === 0 && activeLetterIndex === 1) {
+      console.log('started counting');
+      setTypingStartTime(t => t ? t: new Date()); // correctly handles error on first keystroke
+    }
+  }, [activeLetterIndex, finishedTokens]);
+
+  useEffect(() => {
     if (errorIndex !== -1) {
       // error was made -> increasing counter
       setErrorsNumber(n => n + 1);
@@ -72,6 +86,7 @@ const GamePanelView: React.FC<GamePanelViewProps> = ({
   }, [errorIndex]);
 
   const calculateCpm = (): number => {
+    if (!typingStartTime) return 0;
     const now = new Date();
     const res = now.getTime() - typingStartTime.getTime();
     return typedCharactersNumber / (res / 1000 / 60);

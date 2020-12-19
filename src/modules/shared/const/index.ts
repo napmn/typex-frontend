@@ -1,5 +1,5 @@
+import firebase from 'firebase/app';
 import { TAuthProvider, TGameType } from '../types';
-import { githubProvider } from '../utils/firebase';
 
 const {
   REACT_APP_BASE_API_URL = ''
@@ -25,6 +25,9 @@ export const gameTypes: TGameType[] = [
     path: '/play/dictionary'
   },
 ];
+
+
+const githubProvider = new firebase.auth.GithubAuthProvider();
 
 export const authProviders: TAuthProvider[] = [
   {

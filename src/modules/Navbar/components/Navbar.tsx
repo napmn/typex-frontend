@@ -16,7 +16,7 @@ import { UsernameDialog } from '../../shared/components';
 import { authProviders, gameTypes } from '../../shared/const';
 import { useLoggedInUser } from '../../shared/hooks';
 import { firebaseService } from '../../shared/services';
-import { TAuthProvider } from 'modules/shared/types';
+import { AuthProvider } from 'modules/shared/types';
 
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -60,7 +60,7 @@ const Navbar: React.FC = () => {
     history.push(path);
   };
 
-  const handleSignIn = (authProvider: TAuthProvider) => {
+  const handleSignIn = (authProvider: AuthProvider) => {
     setSignInAnchorEl(null);
     signIn(authProvider.provider).then((result: firebase.auth.UserCredential) => {
       if (result.user?.displayName) {
@@ -173,9 +173,6 @@ const Navbar: React.FC = () => {
       <AppBar className={classes.navbar} position="static">
         <Toolbar className={classes.toolbar}>
           <div>
-            <Button onClick={() => {
-
-            }}>skuska</Button>
             <Link to="/">
               <Button>Home</Button>
             </Link>

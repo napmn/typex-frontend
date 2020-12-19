@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Card from '@material-ui/core/Card';
 import { makeStyles } from '@material-ui/core/styles';
 
-import { TGameType } from '../../shared/types';
+import { GameType } from '../../shared/types';
 
 const useStyles = makeStyles({
   card: {
@@ -13,7 +13,7 @@ const useStyles = makeStyles({
 });
 
 type GameTypeCardProps = {
-  gameType: TGameType
+  gameType: GameType
 }
 
 const GameTypeCard: React.FC<GameTypeCardProps> = ({

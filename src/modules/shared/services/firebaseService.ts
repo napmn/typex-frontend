@@ -2,7 +2,7 @@ import firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/auth';
 
-import { Text, Quote, TGameVariations } from '../types';
+import { Text, Quote, GameVariations } from '../types';
 
 // Firebase app config
 const firebaseConfig = {
@@ -27,7 +27,7 @@ class firebaseService {
 
   static saveUser = async (userId: string) => db.collection('users').doc(userId).set({});
 
-  static getTextByGameVariation = async (gameVariation: TGameVariations): Promise<Text> => {
+  static getTextByGameVariation = async (gameVariation: GameVariations): Promise<Text & {id: string}> => {
     let collection;
     switch (gameVariation) {
     case 'text':
@@ -44,10 +44,10 @@ class firebaseService {
 
     let snapshot = await collection.where(firebase.firestore.FieldPath.documentId(), '>=', key).limit(1).get();
     if (snapshot.size > 0) {
-      return snapshot.docs[0].data();
+      return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
     } else {
       snapshot = await collection.where(firebase.firestore.FieldPath.documentId(), '<', key).limit(1).get();
-      return snapshot.docs[0].data();
+      return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
     }
   }
 }

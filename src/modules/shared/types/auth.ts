@@ -1,6 +1,6 @@
 import firebase from 'firebase/app';
 
-export type TAuthProvider = {
+export type AuthProvider = {
   name: string;
   provider: firebase.auth.AuthProvider;
 }

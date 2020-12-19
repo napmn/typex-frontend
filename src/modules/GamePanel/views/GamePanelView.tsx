@@ -2,16 +2,19 @@ import React, { useEffect, useState } from 'react';
 import Container from '@material-ui/core/Container';
 
 import { TextBoard, TypingInput } from '../components';
-import { TGameType } from '../../shared/types';
+import { GameType } from '../../shared/types';
 import { firebaseService } from '../../shared/services';
+import { useTypingStatsContext } from '../../shared/hooks';
 
 
 type GamePanelViewProps = {
-  gameType: TGameType;
+  gameType: GameType;
+  onFinish: () => void;
 }
 
 const GamePanelView: React.FC<GamePanelViewProps> = ({
-  gameType
+  gameType,
+  onFinish
 }: GamePanelViewProps) => {
   const [ isFinished, setIsFinished ] = useState<boolean>(false);
 
@@ -28,16 +31,18 @@ const GamePanelView: React.FC<GamePanelViewProps> = ({
 
   // CPM / WPM hooks
   const [ typedCharactersNumber, setTypedCharactersNumber ] = useState<number>(0);
-  const [ typingStartTime, setTypingStartTime ] = useState<Date>(); // TODO: setTypingStartTime
-  const [ cpm, setCpm ] = useState<number>(0);
-  const [ accuracy, setAccuracy ] = useState<number>(100);
+  const [ typingStartTime, setTypingStartTime ] = useState<Date>();
+
+  const { state: typingStats, dispatch: typingStatsDispatch } = useTypingStatsContext();
 
   useEffect(() => {
+    typingStatsDispatch({type: 'reset'});
     console.log('check for initial states');
     console.log(text, activeToken, finishedTokens, activeLetterIndex, remainingTokens,
-      errorIndex, errorsNumber, typedCharactersNumber, typingStartTime, cpm, accuracy);
+      errorIndex, errorsNumber, typedCharactersNumber, typingStartTime, typingStats);
     // load random text base on game type
     firebaseService.getTextByGameVariation(gameType.name).then((data) => {
+      typingStatsDispatch({ type: 'update', payload: { textId: data.id } });
       setText(data.content);
     });
   }, []);
@@ -56,9 +61,10 @@ const GamePanelView: React.FC<GamePanelViewProps> = ({
 
   useEffect(() => {
     // logic when the typing is finished
-    if (isFinished === true) {
-      console.log('FINISHED');
-      setAccuracy(calculateAccuracy());
+    if (isFinished) {
+      typingStatsDispatch({ type: 'update', payload: { accuracy: calculateAccuracy() } });
+      typingStatsDispatch({ type: 'finalize' });
+      onFinish();
     }
   }, [isFinished]);
 
@@ -67,13 +73,12 @@ const GamePanelView: React.FC<GamePanelViewProps> = ({
   }, [activeToken]);
 
   useEffect(() => {
-    setCpm(calculateCpm());
+    typingStatsDispatch({ type: 'update', payload: { cpm: calculateCpm() } });
   }, [typedCharactersNumber]);
 
   useEffect(() => {
     // start counting the typing time after first keystroke
     if (finishedTokens.length === 0 && activeLetterIndex === 1) {
-      console.log('started counting');
       setTypingStartTime(t => t ? t: new Date()); // correctly handles error on first keystroke
     }
   }, [activeLetterIndex, finishedTokens]);
@@ -129,9 +134,9 @@ const GamePanelView: React.FC<GamePanelViewProps> = ({
         errorIndex={errorIndex}
         setErrorIndex={setErrorIndex}
       />
-      <div>CPM: {cpm.toFixed(0)}</div>
-      <div>WPM: {(cpm / 5).toFixed(0)}</div>
-      <div>Accuracy: {accuracy.toFixed(2)}%</div>
+      <div>CPM: {typingStats.cpm.toFixed(0)}</div>
+      <div>WPM: {(typingStats.cpm / 5).toFixed(0)}</div>
+      <div>Accuracy: {typingStats.accuracy.toFixed(2)}%</div>
     </Container>
   );
 };

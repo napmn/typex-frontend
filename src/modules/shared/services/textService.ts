@@ -1,4 +1,4 @@
-import { TGameVariations } from '../types';
+import { GameVariations } from '../types';
 // replace with API
 const texts = [
   `
@@ -68,7 +68,7 @@ export const randomWords = (): string => {
   return list.join(' ');
 };
 
-export const getTextByGameVariation = (variation: TGameVariations): string => {
+export const getTextByGameVariation = (variation: GameVariations): string => {
   switch(variation) {
   case 'text': return randomText();
   case 'quote': return randomQuote();

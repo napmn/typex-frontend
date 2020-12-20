@@ -2,6 +2,7 @@ import React from 'react';
 import { format } from 'date-fns';
 
 import Avatar from '@material-ui/core/Avatar';
+import Grid from '@material-ui/core/Grid';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -10,8 +11,17 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
+import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 
 import { Result, User } from '../../shared/types';
+
+const useStyles = makeStyles((theme: Theme) => createStyles({
+  avatar: {
+    width: theme.spacing(3),
+    height: theme.spacing(3),
+    marginRight: '10px'
+  }
+}));
 
 type LeaderboardProps = {
   data: (Result & Partial<User>)[];
@@ -20,32 +30,35 @@ type LeaderboardProps = {
 const Leaderboard: React.FC<LeaderboardProps> = ({
   data
 }: LeaderboardProps) => {
+  const classes = useStyles();
 
   return (
     <>
-      <Typography variant="h4" align="center" gutterBottom>Leaderboard</Typography>
+      <Typography variant="h5" color="textSecondary" align="center" gutterBottom>Leaderboard</Typography>
       <TableContainer component={Paper}>
-        <Table>
+        <Table size="small">
           <TableHead>
             <TableRow>
               <TableCell>User</TableCell>
-              <TableCell>CPM</TableCell>
-              <TableCell>WPM</TableCell>
-              <TableCell>Accuracy</TableCell>
-              <TableCell>Date</TableCell>
+              <TableCell align="right">CPM</TableCell>
+              <TableCell align="right">WPM</TableCell>
+              <TableCell align="right">Accuracy</TableCell>
+              <TableCell align="right">Date</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {data.map((row, i) => (
               <TableRow key={i}>
                 <TableCell component="th" scope="row">
-                  <Avatar src={row.photoURL!} />
-                  {row.displayName}
+                  <Grid container>
+                    <Avatar className={classes.avatar} src={row.photoURL!}/>
+                    <span>{row.displayName}</span>
+                  </Grid>
                 </TableCell>
-                <TableCell>{row.cpm}</TableCell>
-                <TableCell>{row.wpm}</TableCell>
-                <TableCell>{row.accuracy}</TableCell>
-                <TableCell>{format(Date.parse(row.timestamp.toDate().toString()), 'yyyy MMM dd HH:mm:ss')}</TableCell>
+                <TableCell align="right">{row.cpm}</TableCell>
+                <TableCell align="right">{row.wpm}</TableCell>
+                <TableCell align="right">{row.accuracy}</TableCell>
+                <TableCell align="right">{format(Date.parse(row.timestamp.toDate().toString()), 'yyyy MMM dd HH:mm:ss')}</TableCell>
               </TableRow>
             ))}
           </TableBody>

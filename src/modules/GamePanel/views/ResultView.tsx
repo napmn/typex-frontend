@@ -7,6 +7,7 @@ import CheckIcon from '@material-ui/icons/Check';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import Person from '@material-ui/icons/Person';
+import Paper from '@material-ui/core/Paper';
 import ReplayIcon from '@material-ui/icons/Replay';
 import ShareIcon from '@material-ui/icons/Share';
 import Typography from '@material-ui/core/Typography';
@@ -21,29 +22,40 @@ import { Result, User } from '../../shared/types';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
   border: {
-    border: '1px solid white',
-    padding: '2rem 0',
-    justifyContent: 'center',
+    padding: '2rem 1rem',
+    justifyContent: 'flex-start',
     textAlign: 'center'
   },
   avatar: {
     color: theme.palette.getContrastText(pink[500]),
     backgroundColor: pink[500],
+    marginRight: '10px'
   },
   playerContainer: {
     display: 'flex',
   },
   inlineBlock: {
     display: 'inline-block'
+  },
+  leaderboardContainer: {
+    marginTop: '50px'
+  },
+  textButton: {
+    height: '100%'
+  },
+  buttonsContainer: {
+    justifyContent: 'flex-end'
   }
 }));
 
 type ResultViewProps = {
+  resultUser?: User;
   leaderboard: (Result & Partial<User>)[];
   isFetchedResult: boolean;
 }
 
 const ResultView: React.FC<ResultViewProps> = ({
+  resultUser,
   leaderboard,
   isFetchedResult
 }: ResultViewProps) => {
@@ -83,24 +95,30 @@ const ResultView: React.FC<ResultViewProps> = ({
 
   const renderDirectResultControls = () => {
     return (
-      <div>
-        <IconButton
-          onClick={() => {
-            typingStatsDispatch({ type: 'reset' });
-          }}
-        >
-          <ReplayIcon />
-        </IconButton>
-        { user && (
-          <Button
-            onClick={copyToClipboard}
-            disabled={loading}
-            startIcon={copied ? <CheckIcon /> : <ShareIcon />}
+      <Grid container className={classes.buttonsContainer}>
+        <Grid item>
+          <IconButton
+            onClick={() => {
+              typingStatsDispatch({ type: 'reset' });
+            }}
           >
-            {copied ? <span>COPIED to clipboard</span> : <span>share</span>}
-          </Button>
+            <ReplayIcon />
+          </IconButton>
+        </Grid>
+
+        { user && (
+          <Grid item>
+            <Button
+              className={classes.textButton}
+              onClick={copyToClipboard}
+              disabled={loading}
+              startIcon={copied ? <CheckIcon /> : <ShareIcon />}
+            >
+              {copied ? <span>COPIED to clipboard</span> : <span>share</span>}
+            </Button>
+          </Grid>
         )}
-      </div>
+      </Grid>
     );
   };
 
@@ -108,19 +126,21 @@ const ResultView: React.FC<ResultViewProps> = ({
     <>
       {isLoading ? null : (
         <Container maxWidth="md">
-          {!isFetchedResult && renderDirectResultControls()}
-          <Typography variant="h3" align="center" gutterBottom>Your result</Typography>
-          <Grid container direction="row">
-            <Grid className={`${classes.border} ${classes.playerContainer}`} item xs={6}>
-              {user ? <Avatar src={user.photoURL!} /> : <Avatar className={classes.avatar}><Person /></Avatar>}
-              <Typography variant="h4">{user?.displayName ?? 'Guest'} </Typography>
+          <Typography variant="h3" align="center" gutterBottom>Result</Typography>
+          <Grid component={Paper} container direction="row">
+            <Grid className={`${classes.border} ${classes.playerContainer}`} item xs={5}>
+              {resultUser ?
+                <Avatar className={classes.avatar} src={resultUser?.photoURL!} /> :
+                <Avatar className={classes.avatar}><Person /></Avatar>
+              }
+              <Typography variant="h4">{resultUser?.displayName ?? 'Guest'} </Typography>
             </Grid>
             <Grid className={`${classes.border} ${classes.inlineBlock}`} item xs={2}>
               <div className={classes.inlineBlock}>
                 <Typography variant="h4">{typingStats.cpm}</Typography>
               </div>
               <div className={classes.inlineBlock}>
-                <Typography variant="subtitle2">cpm</Typography>
+                <Typography variant="subtitle2">&nbsp;CPM</Typography>
               </div>
             </Grid>
             <Grid className={`${classes.border} ${classes.inlineBlock}`} item xs={2}>
@@ -128,19 +148,20 @@ const ResultView: React.FC<ResultViewProps> = ({
                 <Typography variant="h4">{typingStats.wpm}</Typography>
               </div>
               <div className={classes.inlineBlock}>
-                <Typography variant="subtitle2">wpm</Typography>
+                <Typography variant="subtitle2">&nbsp;WPM</Typography>
               </div>
             </Grid>
-            <Grid className={`${classes.border} ${classes.inlineBlock}`} item xs={2}>
+            <Grid className={`${classes.border} ${classes.inlineBlock}`} item xs={3}>
               <div className={classes.inlineBlock}>
                 <Typography variant="h4">{typingStats.accuracy}%</Typography>
               </div>
               <div className={classes.inlineBlock}>
-                <Typography variant="subtitle2">accuracy</Typography>
+                <Typography variant="subtitle2">&nbsp;accuracy</Typography>
               </div>
             </Grid>
           </Grid>
-          <div>
+          {!isFetchedResult && renderDirectResultControls()}
+          <div className={classes.leaderboardContainer}>
             <Leaderboard data={leaderboard}/>
           </div>
         </Container>

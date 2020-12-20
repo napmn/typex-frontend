@@ -38,6 +38,7 @@ const GameTypeCard: React.FC<GameTypeCardProps> = ({
   return (
     <Card className={classes.card} style={{ border: `1px solid ${gameType.color}`}}>
       <ButtonBase
+        disabled={gameType.disabled}
         className={classes.cardAction}
         onClick={() => history.push(gameType.path)}
       >

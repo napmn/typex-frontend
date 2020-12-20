@@ -11,14 +11,14 @@ import { GameTypeCard } from '../components';
 
 const useStyles = makeStyles({
   root: {
-    height: '90%',
+    height: '70%',
     marginTop: '50px'
   },
   card: {
     flexBasis: '30%'
   },
   grid: {
-    marginTop: '100px'
+    marginTop: '70px'
   }
 });
 

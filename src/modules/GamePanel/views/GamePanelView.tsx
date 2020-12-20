@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Container from '@material-ui/core/Container';
+import Grid from '@material-ui/core/Grid';
+import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core';
 
 import { TextBoard, TypingInput } from '../components';
@@ -11,6 +13,15 @@ const useStyles = makeStyles({
   container: {
     height: '70%',
     marginTop: '50px'
+  },
+  author: {
+    fontStyle: 'italic'
+  },
+  statsContainer: {
+    marginTop: '30px'
+  },
+  stats: {
+    fontWeight: 'bolder'
   }
 });
 
@@ -25,6 +36,7 @@ const GamePanelView: React.FC<GamePanelViewProps> = ({
 
   // Hooks for text partitioning
   const [ text, setText ] = useState<string>();
+  const [ author, setAuthor ] = useState<string>();
   const [ activeToken, setActiveToken ] = useState<string>('');
   const [ finishedTokens, setFinishedTokens ] = useState<Array<string>>([]);
   const [ activeLetterIndex, setActiveLetterIndex ] = useState<number>(0);
@@ -42,14 +54,13 @@ const GamePanelView: React.FC<GamePanelViewProps> = ({
   const { isLoading, setIsLoading } = useLoaderContext();
 
   useEffect(() => {
-    console.log('setting is loading true');
     setIsLoading(true);
     typingStatsDispatch({type: 'reset'});
     // load random text base on game type
     firebaseService.getTextByGameVariation(gameType.name).then((data) => {
       typingStatsDispatch({ type: 'update', payload: { textId: data.id } });
       setText(data.content);
-      console.log('setting is loading false');
+      setAuthor(data.author);
       setIsLoading(false);
     });
   }, []);
@@ -133,6 +144,14 @@ const GamePanelView: React.FC<GamePanelViewProps> = ({
             remainingTokens={remainingTokens}
             errorIndex={errorIndex}
           />
+          <Typography
+            className={classes.author}
+            variant="h6"
+            color="textSecondary"
+            align="right"
+          >
+            Author: {author}
+          </Typography>
           <TypingInput
             activeToken={activeToken}
             setActiveLetterIndex={setActiveLetterIndex}
@@ -140,9 +159,23 @@ const GamePanelView: React.FC<GamePanelViewProps> = ({
             errorIndex={errorIndex}
             setErrorIndex={setErrorIndex}
           />
-          <div>CPM: {typingStats.cpm.toFixed(0)}</div>
-          <div>WPM: {(typingStats.cpm / 5).toFixed(0)}</div>
-          <div>Accuracy: {typingStats.accuracy.toFixed(2)}%</div>
+          <Grid className={classes.statsContainer} container>
+            <Grid item xs={4}>
+              <Typography className={classes.stats} variant="subtitle1" align="center" color="textSecondary">
+                CPM: {typingStats.cpm.toFixed(0)}
+              </Typography>
+            </Grid>
+            <Grid item xs={4}>
+              <Typography className={classes.stats} variant="subtitle1" align="center" color="textSecondary">
+                WPM: {(typingStats.cpm / 5).toFixed(0)}
+              </Typography>
+            </Grid>
+            <Grid item xs={4}>
+              <Typography className={classes.stats} variant="subtitle1" align="center" color="textSecondary">
+                Accuracy: {typingStats.accuracy.toFixed(2)}%
+              </Typography>
+            </Grid>
+          </Grid>
         </Container>
       )}
     </>

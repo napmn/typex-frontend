@@ -223,6 +223,7 @@ const Navbar: React.FC = () => {
             >
               {gameTypes.map((gameType, i) => (
                 <MenuItem
+                  disabled={gameType.disabled}
                   key={i}
                   onClick={() => handlePlaySelection(gameType.path)}
                 >

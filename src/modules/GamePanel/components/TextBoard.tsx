@@ -5,7 +5,7 @@ import Typography from '@material-ui/core/Typography';
 
 const useStyles = makeStyles({
   card: {
-    minHeight: '250px'
+    minHeight: '220px'
   },
   text: {
     fontSize: '24px'

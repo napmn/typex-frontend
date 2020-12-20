@@ -6,6 +6,9 @@ import { makeStyles } from '@material-ui/core/styles';
 const useStyles = makeStyles({
   input: {
     fontSize: '24px'
+  },
+  textField: {
+    marginTop: '80px'
   }
 });
 
@@ -50,6 +53,7 @@ const TypingInput: React.FC<TypingInputProps> = ({
 
   return (
     <TextField
+      className={classes.textField}
       InputProps={{
         classes: {
           input: classes.input,

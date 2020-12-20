@@ -7,6 +7,7 @@ export type GameType = {
   path: string;
   icon: any;
   color: string;
+  disabled: boolean;
 };
 
 export type TypingResult = {

@@ -21,6 +21,7 @@ const GameView: React.FC<GameViewProps> = ({
   const [ typingStats, typingStatsDispatch ] = useTypingStatsReducer();
   const [ leaderboard, setLeaderboard ] = useState<(Result & Partial<User>)[]>([]);
   const { user } = useLoggedInUser();
+  const [ resultUser, setResultUser ] = useState<User>();
   const { resultId } = useParams<{ resultId: string | undefined }>();
   const { setIsLoading } = useLoaderContext();
 
@@ -30,6 +31,7 @@ const GameView: React.FC<GameViewProps> = ({
       setIsLoading(true);
       firebaseService.getResult(resultId!).then(result => {
         if (result) {
+          loadResultUser(result.userId);
           typingStatsDispatch({
             type: 'update',
             payload: {
@@ -40,16 +42,20 @@ const GameView: React.FC<GameViewProps> = ({
             }
           });
           // leaderboard will be loaded in effect
-          // TODO: stop loading
         }
       }).catch((err) => {
         console.error(err);
         setIsLoading(false);
-        // TODO stop loading
         history.push('/');
       });
     }
   }, []);
+
+  const loadResultUser = (userId: string) => {
+    firebaseService.getUser(userId).then((user) => {
+      setResultUser(user);
+    });
+  };
 
   useEffect(() => {
     if (typingStats.finished) {
@@ -59,12 +65,13 @@ const GameView: React.FC<GameViewProps> = ({
           userId: user.uid,
           timestamp: firebase.firestore.Timestamp.fromDate(new Date())
         };
+        loadResultUser(user.uid);
         updateLeaderboard({ ...newResult, displayName: user.displayName ?? '', photoURL: user.photoURL ?? '' });
-        // firebaseService.saveResult(newResult).then(newResultId => {
-        //   typingStatsDispatch({type: 'update', payload: { resultId: newResultId } });
-        // }).catch(err => {
-        //   console.error(err);
-        // });
+        firebaseService.saveResult(newResult).then(newResultId => {
+          typingStatsDispatch({type: 'update', payload: { resultId: newResultId } });
+        }).catch(err => {
+          console.error(err);
+        });
       }
     }
   }, [typingStats.finished, user]);
@@ -103,6 +110,7 @@ const GameView: React.FC<GameViewProps> = ({
     <TypingStatsContext.Provider value={{ state: typingStats, dispatch: typingStatsDispatch }}>
       {typingStats.finished || resultId ?
         <ResultView
+          resultUser={resultUser}
           leaderboard={leaderboard}
           isFetchedResult={!!resultId}
         /> :

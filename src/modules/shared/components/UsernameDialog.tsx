@@ -9,6 +9,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import TextField from '@material-ui/core/TextField';
 
 import { useLoggedInUser } from '../hooks';
+import { firebaseService } from '../services';
 
 type UsernameDialogProps = {
   open: boolean;
@@ -33,16 +34,18 @@ const UsernameDialog: React.FC<UsernameDialogProps> = ({
   }, [username]);
 
   const handleClose = () => {
-    user?.updateProfile({ displayName: user.email }).then(() => {
-      // TODO: warning alert
-    }).catch(error => {
-      console.error(error);
-      // TODO: error alert
-    }).finally(() => onClose());
+    // user?.updateProfile({ displayName: user.email }).then(() => {
+    //   // TODO: warning alert
+    // }).catch(error => {
+    //   console.error(error);
+    //   // TODO: error alert
+    // }).finally(() => onClose());
+    onClose();
   };
 
   const handleSubmit = () => {
     user?.updateProfile({ displayName: username }).then(() => {
+      firebaseService.updateUser(user.uid, { displayName: username });
       // TODO: success alert
     }).catch(error => {
       console.error(error);

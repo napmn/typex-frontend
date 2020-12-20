@@ -8,7 +8,7 @@ import ResultView from './ResultView';
 import { useLoggedInUser, useTypingStatsReducer } from '../../shared/hooks';
 import { TypingStatsContext } from '../../shared/contexts';
 import { firebaseService } from 'modules/shared/services';
-import { Result } from '../../shared/types';
+import { Result, User } from '../../shared/types';
 
 type GameViewProps = {
   gameType?: GameType;
@@ -19,7 +19,7 @@ const GameView: React.FC<GameViewProps> = ({
 }: GameViewProps) => {
   const history = useHistory();
   const [ typingStats, typingStatsDispatch ] = useTypingStatsReducer();
-  const [ leaderboard, setLeaderboard ] = useState<Result[]>([]);
+  const [ leaderboard, setLeaderboard ] = useState<(Result & Partial<User>)[]>([]);
   const { user } = useLoggedInUser();
   const { resultId } = useParams<{ resultId: string | undefined }>();
 
@@ -57,7 +57,7 @@ const GameView: React.FC<GameViewProps> = ({
           userId: user.uid,
           timestamp: firebase.firestore.Timestamp.fromDate(new Date())
         };
-        updateLeaderboard(newResult);
+        updateLeaderboard({ ...newResult, displayName: user.displayName ?? '', photoURL: user.photoURL ?? '' });
         console.log('NEW RESULT', newResult);
         firebaseService.saveResult(newResult).then(newResultId => {
           typingStatsDispatch({type: 'update', payload: { resultId: newResultId } });
@@ -75,7 +75,7 @@ const GameView: React.FC<GameViewProps> = ({
     }
   }, [typingStats.textId]);
 
-  const updateLeaderboard = (newResult: Result) => {
+  const updateLeaderboard = (newResult: Result & User) => {
     const position = leaderboard.findIndex(r => r.cpm < typingStats.cpm);
     // TODO simplify this logic
     if (leaderboard!.length < 10 && position === -1) {

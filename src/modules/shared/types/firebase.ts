@@ -15,3 +15,8 @@ export type Result = {
   userId: string;
   timestamp: firebase.firestore.Timestamp;
 }
+
+export type User = {
+  displayName: string;
+  photoURL: string;
+}

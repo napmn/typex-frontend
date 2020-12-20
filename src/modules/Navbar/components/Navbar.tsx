@@ -63,16 +63,18 @@ const Navbar: React.FC = () => {
   const handleSignIn = (authProvider: AuthProvider) => {
     setSignInAnchorEl(null);
     signIn(authProvider.provider).then((result: firebase.auth.UserCredential) => {
-      if (result.user?.displayName) {
-        // TODO: success alert
-        // user has already set username
-        return;
-      }
-      // store user id to users collection
-      firebaseService.saveUser(result.user!.uid);
+      if (result.user) {
+        if (result.user.displayName) {
+          // TODO: success alert
+          // user has already set username
+          return;
+        }
+        // store user id to users collection
+        firebaseService.saveUser(result.user!.uid, { displayName: result.user.email!, photoURL: result.user.photoURL! });
 
-      // user was registered, let him enter username
-      setUsernameDialogOpened(true);
+        // user was registered, let him enter username
+        setUsernameDialogOpened(true);
+      }
     }).catch(error => {
       // TODO: error alert
       console.error(error);

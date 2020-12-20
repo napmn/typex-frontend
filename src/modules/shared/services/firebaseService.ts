@@ -2,7 +2,7 @@ import firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/auth';
 
-import { GameVariations, Result, Text, Quote } from '../types';
+import { GameVariations, Result, Text, User, Quote } from '../types';
 
 // Firebase app config
 const firebaseConfig = {
@@ -22,11 +22,17 @@ const db = firebase.firestore();
 const texts = db.collection('texts') as firebase.firestore.CollectionReference<Text>;
 const quotes = db.collection('quotes') as firebase.firestore.CollectionReference<Quote>;
 const results = db.collection('results') as firebase.firestore.CollectionReference<Result>;
+const users = db.collection('users') as firebase.firestore.CollectionReference<User>;
 
 class firebaseService {
-  static getUsers = async () => db.collection('users').get();
+  static getUser = async (userId: string) => {
+    const snapshot = await users.doc(userId).get();
+    return snapshot.data();
+  };
 
-  static saveUser = async (userId: string) => db.collection('users').doc(userId).set({});
+  static saveUser = async (userId: string, data: User) => users.doc(userId).set(data);
+
+  static updateUser = async (userId: string, data: Partial<User>) => users.doc(userId).update(data);
 
   static getTextByGameVariation = async (gameVariation: GameVariations): Promise<Text & {id: string}> => {
     let collection;
@@ -55,7 +61,12 @@ class firebaseService {
   // TODO type this
   static getLeaderboardForText = async (textId: string) => {
     const snapshot = await results.where('textId', '==', textId).orderBy('cpm', 'desc').limit(10).get();
-    return snapshot.docs.map(d => d.data());
+    const finalData = await Promise.all(snapshot.docs.map(async d => {
+      const data = d.data();
+      const userData = await firebaseService.getUser(data.userId);
+      return { ...data, ...userData };
+    }));
+    return finalData;
   }
 
   static getResult = async (resultId: string) => {

@@ -4,6 +4,7 @@ import { TypingStatsContext } from '../../shared/contexts';
 
 import { typingStatsInitialState } from '../const';
 import { TypingResult, TypingResultAction } from '../types';
+import { firebaseService } from '../services';
 
 // Hook providing logged in user information
 export const useLoggedInUser = () => {
@@ -12,7 +13,17 @@ export const useLoggedInUser = () => {
 
   // Setup onAuthStateChanged once when component is mounted
   useEffect(() => {
-    const unsubscribe = firebase.auth().onAuthStateChanged(u => setUser(u));
+    const unsubscribe = firebase.auth().onAuthStateChanged(u => {
+      setUser(u);
+      if (u) {
+        // refresh photo url if changed
+        firebaseService.getUser(u.uid).then(data => {
+          if (data?.photoURL !== u.photoURL) {
+            firebaseService.updateUser(u.uid, { photoURL: u.photoURL!});
+          }
+        });
+      }
+    });
 
     // Call unsubscribe in the cleanup of the hook
     return () => unsubscribe();
@@ -22,9 +33,7 @@ export const useLoggedInUser = () => {
 
   const signIn = (provider: firebase.auth.AuthProvider) => firebase.auth().signInWithPopup(provider);
 
-
   return { user, signIn, signOut };
-
 };
 
 

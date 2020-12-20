@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import Button from '@material-ui/core/Button';
 import CheckIcon from '@material-ui/icons/Check';
@@ -7,10 +7,10 @@ import ReplayIcon from '@material-ui/icons/Replay';
 import ShareIcon from '@material-ui/icons/Share';
 
 import { useLoggedInUser, useTypingStatsContext } from '../../shared/hooks';
-import { Result } from '../../shared/types';
+import { Result, User } from '../../shared/types';
 
 type ResultViewProps = {
-  leaderboard: Result[];
+  leaderboard: (Result & Partial<User>)[];
   isFetchedResult: boolean;
 }
 
@@ -38,7 +38,8 @@ const ResultView: React.FC<ResultViewProps> = ({
     }
   }, [copied]);
 
-  const copyToClipboard = () => {
+  const copyToClipboard = useCallback(() => {
+    if (copied) return;
     setLoading(true);
 
     loadingTimer.current = window.setTimeout(() => {
@@ -47,7 +48,7 @@ const ResultView: React.FC<ResultViewProps> = ({
         setLoading(false);
       });
     }, 1000);
-  };
+  }, [typingStats.resultId]);
 
   const renderDirectResultControls = () => {
     return (
@@ -87,6 +88,8 @@ const ResultView: React.FC<ResultViewProps> = ({
             <div>{row.cpm}</div>
             <div>{row.accuracy}</div>
             <div>{row.timestamp.toDate().toString()}</div>
+            <div>{row.displayName}</div>
+            <div>{row.photoURL}</div>
           </div>
         ))}
       </div>

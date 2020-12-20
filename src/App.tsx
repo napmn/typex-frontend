@@ -13,7 +13,7 @@ import green from '@material-ui/core/colors/green';
 import purple from '@material-ui/core/colors/purple';
 import { makeStyles } from '@material-ui/core/styles';
 
-import { GameView, ResultView } from './modules/GamePanel';
+import { GameView } from './modules/GamePanel';
 import { HomeView } from './modules/Home';
 import { LeaderBoardView } from './modules/LeaderBoard';
 import { Navbar } from './modules/Navbar';
@@ -59,8 +59,7 @@ function App() {
                 />
               ))}
               <Route exact path="/leaderboard" component={LeaderBoardView} />
-              <Route exact path="/result" component={ResultView} />
-              <Route exact path="/result/:resultId" component={ResultView} />
+              <Route exact path="/result/:resultId" render={() => <GameView />} />
               <Redirect to="/" />
             </Switch>
           </Router>

@@ -11,6 +11,8 @@ export type TypingResult = {
   cpm: number;
   wpm: number;
   accuracy: number;
+  finished: boolean;
+  resultId?: string;
 };
 
 export type TypingResultAction = {

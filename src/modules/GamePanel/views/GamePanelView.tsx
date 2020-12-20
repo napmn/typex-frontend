@@ -9,15 +9,11 @@ import { useTypingStatsContext } from '../../shared/hooks';
 
 type GamePanelViewProps = {
   gameType: GameType;
-  onFinish: () => void;
 }
 
 const GamePanelView: React.FC<GamePanelViewProps> = ({
-  gameType,
-  onFinish
+  gameType
 }: GamePanelViewProps) => {
-  const [ isFinished, setIsFinished ] = useState<boolean>(false);
-
   // Hooks for text partitioning
   const [ text, setText ] = useState<string>();
   const [ activeToken, setActiveToken ] = useState<string>('');
@@ -29,7 +25,7 @@ const GamePanelView: React.FC<GamePanelViewProps> = ({
   const [ errorIndex, setErrorIndex ] = useState<number>(-1);
   const [ errorsNumber, setErrorsNumber ] = useState<number>(0);
 
-  // CPM / WPM hooks
+  // Stats hooks
   const [ typedCharactersNumber, setTypedCharactersNumber ] = useState<number>(0);
   const [ typingStartTime, setTypingStartTime ] = useState<Date>();
 
@@ -37,9 +33,6 @@ const GamePanelView: React.FC<GamePanelViewProps> = ({
 
   useEffect(() => {
     typingStatsDispatch({type: 'reset'});
-    console.log('check for initial states');
-    console.log(text, activeToken, finishedTokens, activeLetterIndex, remainingTokens,
-      errorIndex, errorsNumber, typedCharactersNumber, typingStartTime, typingStats);
     // load random text base on game type
     firebaseService.getTextByGameVariation(gameType.name).then((data) => {
       typingStatsDispatch({ type: 'update', payload: { textId: data.id } });
@@ -60,20 +53,23 @@ const GamePanelView: React.FC<GamePanelViewProps> = ({
   }, [text]);
 
   useEffect(() => {
-    // logic when the typing is finished
-    if (isFinished) {
-      typingStatsDispatch({ type: 'update', payload: { accuracy: calculateAccuracy() } });
-      typingStatsDispatch({ type: 'finalize' });
-      onFinish();
-    }
-  }, [isFinished]);
-
-  useEffect(() => {
     setActiveLetterIndex(0);
   }, [activeToken]);
 
   useEffect(() => {
-    typingStatsDispatch({ type: 'update', payload: { cpm: calculateCpm() } });
+    if (typedCharactersNumber === text?.length) {
+      // typing finished -> calculate final stats
+      typingStatsDispatch({
+        type: 'update',
+        payload: {
+          cpm: calculateCpm(),
+          accuracy: calculateAccuracy()
+        }
+      });
+      typingStatsDispatch({ type: 'finalize' });
+    } else {
+      typingStatsDispatch({ type: 'update', payload: { cpm: calculateCpm() } });
+    }
   }, [typedCharactersNumber]);
 
   useEffect(() => {
@@ -110,12 +106,7 @@ const GamePanelView: React.FC<GamePanelViewProps> = ({
       return tokens.slice(1);
     });
     setTypedCharactersNumber(n => n + activeToken.length);
-    if (remainingTokens.length > 0) {
-      setActiveToken(remainingTokens[0]);
-    } else {
-      setActiveToken("");
-      setIsFinished(true);
-    }
+    setActiveToken(remainingTokens.length > 0 ? remainingTokens[0] : "");
   };
 
   return (

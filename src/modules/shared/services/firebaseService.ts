@@ -2,7 +2,7 @@ import firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/auth';
 
-import { Text, Quote, GameVariations } from '../types';
+import { GameVariations, Result, Text, Quote } from '../types';
 
 // Firebase app config
 const firebaseConfig = {
@@ -21,6 +21,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const texts = db.collection('texts') as firebase.firestore.CollectionReference<Text>;
 const quotes = db.collection('quotes') as firebase.firestore.CollectionReference<Quote>;
+const results = db.collection('results') as firebase.firestore.CollectionReference<Result>;
 
 class firebaseService {
   static getUsers = async () => db.collection('users').get();
@@ -49,6 +50,23 @@ class firebaseService {
       snapshot = await collection.where(firebase.firestore.FieldPath.documentId(), '<', key).limit(1).get();
       return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
     }
+  }
+
+  // TODO type this
+  static getLeaderboardForText = async (textId: string) => {
+    const snapshot = await results.where('textId', '==', textId).orderBy('cpm', 'desc').limit(10).get();
+    return snapshot.docs.map(d => d.data());
+  }
+
+  static getResult = async (resultId: string) => {
+    const snapshot = await results.where(firebase.firestore.FieldPath.documentId(), '==', resultId).get();
+    if (snapshot.docs.length === 0) throw Error('Result does not exist');
+    return snapshot.docs[0].data();
+  }
+
+  static saveResult = async (resultData: Result) => {
+    const resultObj = await results.add(resultData);
+    return resultObj.id;
   }
 }
 

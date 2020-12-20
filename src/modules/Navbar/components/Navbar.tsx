@@ -159,6 +159,7 @@ const Navbar: React.FC = () => {
             onClick={() => {
               setProfileAnchorEl(null);
               signOut();
+              history.push('/');
             }}
           >
             Sign Out

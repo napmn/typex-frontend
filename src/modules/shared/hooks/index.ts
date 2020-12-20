@@ -35,9 +35,10 @@ const typingStatsReducer = (state: TypingResult, { type, payload }: TypingResult
   case 'finalize':
     return {
       ...state,
-      cpm: Math.round((state.cpm + Number.EPSILON) * 100) / 100,
-      wpm: Math.round((state.cpm / 5 + Number.EPSILON) * 100) / 100,
+      cpm: Math.round((state.cpm + Number.EPSILON)),
+      wpm: Math.round((state.cpm / 5 + Number.EPSILON)),
       accuracy: Math.round((state.accuracy + Number.EPSILON) * 100) / 100,
+      finished: true
     };
   case 'reset':
     return typingStatsInitialState;
@@ -51,5 +52,5 @@ export const useTypingStatsReducer = () => {
 };
 
 export const useTypingStatsContext = () => {
-  return useContext(TypingStatsContext );
+  return useContext(TypingStatsContext);
 };

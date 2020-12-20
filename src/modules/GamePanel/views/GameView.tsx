@@ -1,32 +1,110 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useParams, useHistory } from 'react-router-dom';
+import firebase from 'firebase/app';
 
 import { GameType } from '../../shared/types';
 import GamePanelView from './GamePanelView';
 import ResultView from './ResultView';
-import { useTypingStatsReducer } from '../../shared/hooks';
+import { useLoggedInUser, useTypingStatsReducer } from '../../shared/hooks';
 import { TypingStatsContext } from '../../shared/contexts';
+import { firebaseService } from 'modules/shared/services';
+import { Result } from '../../shared/types';
 
 type GameViewProps = {
-  gameType: GameType;
+  gameType?: GameType;
 }
 
 const GameView: React.FC<GameViewProps> = ({
   gameType
 }: GameViewProps) => {
-  const [ isFinished, setIsFinished ] = useState<boolean>(false);
+  const history = useHistory();
   const [ typingStats, typingStatsDispatch ] = useTypingStatsReducer();
+  const [ leaderboard, setLeaderboard ] = useState<Result[]>([]);
+  const { user } = useLoggedInUser();
+  const { resultId } = useParams<{ resultId: string | undefined }>();
 
-  const handleFinish = () => {
-    setIsFinished(true);
+  useEffect(() => {
+    if (resultId) {
+      // load leaderboard
+      console.log('ResultID submitted -> loading leaderboard');
+      firebaseService.getResult(resultId!).then(result => {
+        if (result) {
+          typingStatsDispatch({
+            type: 'update',
+            payload: {
+              accuracy: result.accuracy,
+              cpm: result.cpm,
+              wpm: result.wpm,
+              textId: result.textId
+            }
+          });
+          // leaderboard will be loaded in effect
+          // TODO: stop loading
+        }
+      }).catch((err) => {
+        console.error(err);
+        // TODO stop loading
+        history.push('/');
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typingStats.finished) {
+      if (user) {
+        const newResult = {
+          ...typingStats,
+          userId: user.uid,
+          timestamp: firebase.firestore.Timestamp.fromDate(new Date())
+        };
+        updateLeaderboard(newResult);
+        console.log('NEW RESULT', newResult);
+        firebaseService.saveResult(newResult).then(newResultId => {
+          typingStatsDispatch({type: 'update', payload: { resultId: newResultId } });
+        }).catch(err => {
+          console.error(err);
+        });
+      }
+    }
+  }, [typingStats.finished, user]);
+
+  useEffect(() => {
+    // load leaderboard as soon as we have text id
+    if (typingStats.textId !== '') {
+      firebaseService.getLeaderboardForText(typingStats.textId).then(res => setLeaderboard(res));
+    }
+  }, [typingStats.textId]);
+
+  const updateLeaderboard = (newResult: Result) => {
+    const position = leaderboard.findIndex(r => r.cpm < typingStats.cpm);
+    // TODO simplify this logic
+    if (leaderboard!.length < 10 && position === -1) {
+      // object with lower score was not found but leaderboard is not complete -> append new result
+      const updatedLeaderboard = leaderboard.slice();
+      updatedLeaderboard.push(newResult);
+      setLeaderboard(updatedLeaderboard);
+    } else if (position !== -1) {
+      const updatedLeaderboard = leaderboard.slice();
+      if (leaderboard.length < 10) {
+        // insert
+        updatedLeaderboard.splice(position, 0, newResult);
+      } else {
+        // update
+        updatedLeaderboard[position] = newResult;
+      }
+      setLeaderboard(updatedLeaderboard);
+    }
   };
 
   return (
     <TypingStatsContext.Provider value={{ state: typingStats, dispatch: typingStatsDispatch }}>
-      {isFinished ?
-        <ResultView /> :
+      {typingStats.finished || resultId ?
+        <ResultView
+          leaderboard={leaderboard}
+          isFetchedResult={!!resultId}
+        /> :
         <GamePanelView
-          gameType={gameType}
-          onFinish={handleFinish}
+          gameType={gameType!}
         />
       }
     </TypingStatsContext.Provider>

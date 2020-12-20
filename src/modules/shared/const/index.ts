@@ -33,5 +33,6 @@ export const typingStatsInitialState: TypingResult = {
   textId: '',
   cpm: 0,
   wpm: 0,
-  accuracy: 100
+  accuracy: 100,
+  finished: false
 };

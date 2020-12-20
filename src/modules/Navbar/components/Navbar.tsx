@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import firebase from 'firebase/app';
-import { Link, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import AppBar from '@material-ui/core/AppBar';
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
+import EditIcon from '@material-ui/icons/Edit';
+import ExitToAppIcon from '@material-ui/icons/ExitToApp';
+import HomeIcon from '@material-ui/icons/Home';
 import IconButton from '@material-ui/core/IconButton';
 import Keyboard from '@material-ui/icons/Keyboard';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -21,7 +26,8 @@ import { AuthProvider } from 'modules/shared/types';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
   navbar: {
-    height: '10%'
+    height: '10%',
+    boxShadow: 'none'
   },
   toolbar: {
     height: '100%',
@@ -86,7 +92,8 @@ const Navbar: React.FC = () => {
       <>
         <Button
           onClick={(e: React.MouseEvent<HTMLElement>) => setSignInAnchorEl(e.currentTarget)}
-          startIcon={<AccountCircleIcon />}
+          startIcon={<AccountCircleIcon fontSize="large" />}
+          size="large"
         >
           Sign In
         </Button>
@@ -110,7 +117,10 @@ const Navbar: React.FC = () => {
               key={i}
               onClick={() => handleSignIn(authProvider)}
             >
-              {authProvider.name}
+              <ListItemIcon>
+                {authProvider.icon}
+              </ListItemIcon>
+              <ListItemText>{authProvider.name}</ListItemText>
             </MenuItem>
           ))}
         </Menu>
@@ -142,7 +152,7 @@ const Navbar: React.FC = () => {
           getContentAnchorEl={null}
           anchorOrigin={{
             vertical: 'bottom',
-            horizontal: 'center',
+            horizontal: 'left',
           }}
           transformOrigin={{
             vertical: 'top',
@@ -155,7 +165,10 @@ const Navbar: React.FC = () => {
               setUsernameDialogOpened(true);
             }}
           >
-            Change Username
+            <ListItemIcon>
+              <EditIcon/>
+            </ListItemIcon>
+            <ListItemText>Change Username</ListItemText>
           </MenuItem>
           <MenuItem
             onClick={() => {
@@ -164,7 +177,10 @@ const Navbar: React.FC = () => {
               history.push('/');
             }}
           >
-            Sign Out
+            <ListItemIcon>
+              <ExitToAppIcon />
+            </ListItemIcon>
+            <ListItemText>Sign Out</ListItemText>
           </MenuItem>
         </Menu>
       </>
@@ -173,16 +189,22 @@ const Navbar: React.FC = () => {
 
   return (
     <>
-      <AppBar className={classes.navbar} position="static">
+      <AppBar
+        className={classes.navbar}
+        position="static"
+        color="transparent"
+      >
         <Toolbar className={classes.toolbar}>
           <div>
-            <Link to="/">
-              <Button>Home</Button>
-            </Link>
+            <IconButton
+              onClick={() => history.push('/')}
+            >
+              <HomeIcon fontSize="large"/>
+            </IconButton>
             <IconButton
               onClick={handlePlayMenu}
             >
-              <Keyboard />
+              <Keyboard fontSize="large" />
             </IconButton>
             <Menu
               anchorEl={playAnchorEl}
@@ -204,7 +226,10 @@ const Navbar: React.FC = () => {
                   key={i}
                   onClick={() => handlePlaySelection(gameType.path)}
                 >
-                  {gameType.verboseName}
+                  <ListItemIcon>
+                    {gameType.icon}
+                  </ListItemIcon>
+                  <ListItemText>{gameType.verboseName}</ListItemText>
                 </MenuItem>
               ))}
               {/* TODO: icons and more options */}
@@ -212,7 +237,6 @@ const Navbar: React.FC = () => {
           </div>
           <div className={classes.grow} />
           {user ? renderLoggedInPart() : renderLoggedOutpart()}
-          {/* {user ? renderLoggedInPart() : renderLoggedOutpart()} */}
         </Toolbar>
       </AppBar>
       <UsernameDialog

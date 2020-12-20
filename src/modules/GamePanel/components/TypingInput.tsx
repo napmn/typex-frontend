@@ -1,6 +1,13 @@
 import React, { SetStateAction, useEffect, useState } from 'react';
 
-import Input from '@material-ui/core/Input';
+import TextField from '@material-ui/core/TextField';
+import { makeStyles } from '@material-ui/core/styles';
+
+const useStyles = makeStyles({
+  input: {
+    fontSize: '24px'
+  }
+});
 
 interface TypingInputProps {
   activeToken: string;
@@ -17,6 +24,7 @@ const TypingInput: React.FC<TypingInputProps> = ({
   errorIndex,
   setErrorIndex
 }: TypingInputProps) => {
+  const classes = useStyles();
   const [inputValue, setInputValue ] = useState('');
 
   useEffect(() => {
@@ -41,7 +49,13 @@ const TypingInput: React.FC<TypingInputProps> = ({
   }, [inputValue, activeToken]);
 
   return (
-    <Input
+    <TextField
+      InputProps={{
+        classes: {
+          input: classes.input,
+        },
+        autoFocus: true
+      }}
       onChange={(e) => setInputValue(e.target.value)} value={inputValue}
       fullWidth
       autoFocus

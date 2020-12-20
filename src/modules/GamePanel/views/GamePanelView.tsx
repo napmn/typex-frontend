@@ -1,11 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import Container from '@material-ui/core/Container';
+import { makeStyles } from '@material-ui/core';
 
 import { TextBoard, TypingInput } from '../components';
 import { GameType } from '../../shared/types';
 import { firebaseService } from '../../shared/services';
-import { useTypingStatsContext } from '../../shared/hooks';
+import { useLoaderContext, useTypingStatsContext } from '../../shared/hooks';
 
+const useStyles = makeStyles({
+  container: {
+    height: '70%',
+    marginTop: '50px'
+  }
+});
 
 type GamePanelViewProps = {
   gameType: GameType;
@@ -14,6 +21,8 @@ type GamePanelViewProps = {
 const GamePanelView: React.FC<GamePanelViewProps> = ({
   gameType
 }: GamePanelViewProps) => {
+  const classes = useStyles();
+
   // Hooks for text partitioning
   const [ text, setText ] = useState<string>();
   const [ activeToken, setActiveToken ] = useState<string>('');
@@ -30,13 +39,18 @@ const GamePanelView: React.FC<GamePanelViewProps> = ({
   const [ typingStartTime, setTypingStartTime ] = useState<Date>();
 
   const { state: typingStats, dispatch: typingStatsDispatch } = useTypingStatsContext();
+  const { isLoading, setIsLoading } = useLoaderContext();
 
   useEffect(() => {
+    console.log('setting is loading true');
+    setIsLoading(true);
     typingStatsDispatch({type: 'reset'});
     // load random text base on game type
     firebaseService.getTextByGameVariation(gameType.name).then((data) => {
       typingStatsDispatch({ type: 'update', payload: { textId: data.id } });
       setText(data.content);
+      console.log('setting is loading false');
+      setIsLoading(false);
     });
   }, []);
 
@@ -57,18 +71,16 @@ const GamePanelView: React.FC<GamePanelViewProps> = ({
   }, [activeToken]);
 
   useEffect(() => {
+    typingStatsDispatch({
+      type: 'update',
+      payload: {
+        cpm: calculateCpm(),
+        accuracy: calculateAccuracy()
+      }
+    });
     if (typedCharactersNumber === text?.length) {
       // typing finished -> calculate final stats
-      typingStatsDispatch({
-        type: 'update',
-        payload: {
-          cpm: calculateCpm(),
-          accuracy: calculateAccuracy()
-        }
-      });
       typingStatsDispatch({ type: 'finalize' });
-    } else {
-      typingStatsDispatch({ type: 'update', payload: { cpm: calculateCpm() } });
     }
   }, [typedCharactersNumber]);
 
@@ -94,6 +106,7 @@ const GamePanelView: React.FC<GamePanelViewProps> = ({
   };
 
   const calculateAccuracy = (): number => {
+    if (!typingStartTime) return 100;
     return (text!.length - errorsNumber) / text!.length * 100;
   };
 
@@ -110,25 +123,29 @@ const GamePanelView: React.FC<GamePanelViewProps> = ({
   };
 
   return (
-    <Container maxWidth="sm">
-      <TextBoard
-        finishedTokens={finishedTokens}
-        activeToken={activeToken}
-        activeLetterIndex={activeLetterIndex}
-        remainingTokens={remainingTokens}
-        errorIndex={errorIndex}
-      />
-      <TypingInput
-        activeToken={activeToken}
-        setActiveLetterIndex={setActiveLetterIndex}
-        jumpToNextWord={jumpToNextWord}
-        errorIndex={errorIndex}
-        setErrorIndex={setErrorIndex}
-      />
-      <div>CPM: {typingStats.cpm.toFixed(0)}</div>
-      <div>WPM: {(typingStats.cpm / 5).toFixed(0)}</div>
-      <div>Accuracy: {typingStats.accuracy.toFixed(2)}%</div>
-    </Container>
+    <>
+      {isLoading ? null : (
+        <Container className={classes.container} maxWidth="md">
+          <TextBoard
+            finishedTokens={finishedTokens}
+            activeToken={activeToken}
+            activeLetterIndex={activeLetterIndex}
+            remainingTokens={remainingTokens}
+            errorIndex={errorIndex}
+          />
+          <TypingInput
+            activeToken={activeToken}
+            setActiveLetterIndex={setActiveLetterIndex}
+            jumpToNextWord={jumpToNextWord}
+            errorIndex={errorIndex}
+            setErrorIndex={setErrorIndex}
+          />
+          <div>CPM: {typingStats.cpm.toFixed(0)}</div>
+          <div>WPM: {(typingStats.cpm / 5).toFixed(0)}</div>
+          <div>Accuracy: {typingStats.accuracy.toFixed(2)}%</div>
+        </Container>
+      )}
+    </>
   );
 };
 

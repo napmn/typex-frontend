@@ -3,7 +3,10 @@ export type GameVariations = "text" | "quote" | "dictionary";
 export type GameType = {
   name: GameVariations;
   verboseName: string;
+  about: string;
   path: string;
+  icon: any;
+  color: string;
 };
 
 export type TypingResult = {
@@ -23,4 +26,9 @@ export type TypingResultAction = {
 export type TypingResultContextValue = {
   state: TypingResult;
   dispatch: React.Dispatch<TypingResultAction>
+}
+
+export type LoaderContextValue = {
+  isLoading: boolean;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }

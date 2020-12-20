@@ -1,6 +1,6 @@
 import { useContext, useEffect, useReducer, useState } from 'react';
 import firebase from 'firebase/app';
-import { TypingStatsContext } from '../../shared/contexts';
+import { LoaderContext, TypingStatsContext } from '../../shared/contexts';
 
 import { typingStatsInitialState } from '../const';
 import { TypingResult, TypingResultAction } from '../types';
@@ -62,4 +62,8 @@ export const useTypingStatsReducer = () => {
 
 export const useTypingStatsContext = () => {
   return useContext(TypingStatsContext);
+};
+
+export const useLoaderContext = () => {
+  return useContext(LoaderContext);
 };

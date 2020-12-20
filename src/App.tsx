@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Redirect,
   Route,
@@ -9,24 +9,27 @@ import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import CssBaseline from '@material-ui/core/CssBaseline';
 
-import green from '@material-ui/core/colors/green';
-import purple from '@material-ui/core/colors/purple';
+import cyan from '@material-ui/core/colors/cyan';
 import { makeStyles } from '@material-ui/core/styles';
 
 import { GameView } from './modules/GamePanel';
 import { HomeView } from './modules/Home';
-import { LeaderBoardView } from './modules/LeaderBoard';
 import { Navbar } from './modules/Navbar';
-import { gameTypes } from 'modules/shared/const';
+import { gameTypes } from './modules/shared/const';
+import { LoaderContext } from './modules/shared/contexts';
+import { LoadingWrapper } from './modules/shared/components';
 
 const theme = createMuiTheme({
   palette: {
     primary: {
-      main: purple[500],
+      // main: deepOrange[500],
+      main: cyan[400]
     },
-    secondary: {
-      main: green[500],
-    },
+    type: 'dark',
+    background: {
+      default: '#121520',
+      paper: '#212735'
+    }
   },
 });
 
@@ -40,30 +43,40 @@ const useStyles = makeStyles({
 
 function App() {
   const classes = useStyles();
+  const [ isLoading, setIsLoading ] = useState<boolean>(false);
 
   return (
     <MuiThemeProvider theme={theme}>
       <CssBaseline />
       <main className="App">
-        <Container maxWidth="lg" className={classes.mainContainer}>
-          <Router>
-            <Navbar />
-            <Switch>
-              <Route exact path="/" component={HomeView} />
-              {gameTypes.map((gameType, i) => (
-                <Route
-                  key={i}
-                  exact
-                  path={gameType.path}
-                  render={() => <GameView gameType={gameType} />}
-                />
-              ))}
-              <Route exact path="/leaderboard" component={LeaderBoardView} />
-              <Route exact path="/result/:resultId" render={() => <GameView />} />
-              <Redirect to="/" />
-            </Switch>
-          </Router>
-        </Container>
+        <LoaderContext.Provider value={{ isLoading, setIsLoading }}>
+          <Container maxWidth="lg" className={classes.mainContainer}>
+            <Router>
+              <Navbar />
+              <Switch>
+                <Route exact path="/" component={HomeView} />
+                {gameTypes.map((gameType, i) => (
+                  <Route
+                    key={i}
+                    exact
+                    path={gameType.path}
+                    render={() => (
+                      <LoadingWrapper>
+                        <GameView gameType={gameType} />
+                      </LoadingWrapper>
+                    )}
+                  />
+                ))}
+                <Route exact path="/result/:resultId" render={() => (
+                  <LoadingWrapper>
+                    <GameView />
+                  </LoadingWrapper>
+                )} />
+                <Redirect to="/" />
+              </Switch>
+            </Router>
+          </Container>
+        </LoaderContext.Provider>
       </main>
     </MuiThemeProvider>
   );

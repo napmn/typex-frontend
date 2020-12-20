@@ -5,7 +5,7 @@ import firebase from 'firebase/app';
 import { GameType } from '../../shared/types';
 import GamePanelView from './GamePanelView';
 import ResultView from './ResultView';
-import { useLoggedInUser, useTypingStatsReducer } from '../../shared/hooks';
+import { useLoaderContext, useLoggedInUser, useTypingStatsReducer } from '../../shared/hooks';
 import { TypingStatsContext } from '../../shared/contexts';
 import { firebaseService } from 'modules/shared/services';
 import { Result, User } from '../../shared/types';
@@ -22,11 +22,12 @@ const GameView: React.FC<GameViewProps> = ({
   const [ leaderboard, setLeaderboard ] = useState<(Result & Partial<User>)[]>([]);
   const { user } = useLoggedInUser();
   const { resultId } = useParams<{ resultId: string | undefined }>();
+  const { setIsLoading } = useLoaderContext();
 
   useEffect(() => {
     if (resultId) {
       // load leaderboard
-      console.log('ResultID submitted -> loading leaderboard');
+      setIsLoading(true);
       firebaseService.getResult(resultId!).then(result => {
         if (result) {
           typingStatsDispatch({
@@ -43,6 +44,7 @@ const GameView: React.FC<GameViewProps> = ({
         }
       }).catch((err) => {
         console.error(err);
+        setIsLoading(false);
         // TODO stop loading
         history.push('/');
       });
@@ -58,12 +60,11 @@ const GameView: React.FC<GameViewProps> = ({
           timestamp: firebase.firestore.Timestamp.fromDate(new Date())
         };
         updateLeaderboard({ ...newResult, displayName: user.displayName ?? '', photoURL: user.photoURL ?? '' });
-        console.log('NEW RESULT', newResult);
-        firebaseService.saveResult(newResult).then(newResultId => {
-          typingStatsDispatch({type: 'update', payload: { resultId: newResultId } });
-        }).catch(err => {
-          console.error(err);
-        });
+        // firebaseService.saveResult(newResult).then(newResultId => {
+        //   typingStatsDispatch({type: 'update', payload: { resultId: newResultId } });
+        // }).catch(err => {
+        //   console.error(err);
+        // });
       }
     }
   }, [typingStats.finished, user]);
@@ -71,7 +72,9 @@ const GameView: React.FC<GameViewProps> = ({
   useEffect(() => {
     // load leaderboard as soon as we have text id
     if (typingStats.textId !== '') {
-      firebaseService.getLeaderboardForText(typingStats.textId).then(res => setLeaderboard(res));
+      firebaseService.getLeaderboardForText(typingStats.textId).then(
+        res => setLeaderboard(res)
+      ).finally(() => setIsLoading(false));
     }
   }, [typingStats.textId]);
 

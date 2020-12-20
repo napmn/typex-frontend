@@ -1,33 +1,4 @@
-import firebase from 'firebase/app';
-import { AuthProvider, GameType, TypingResult } from '../types';
-
-export const gameTypes: GameType[] = [
-  {
-    name: 'text',
-    verboseName: 'Text',
-    path: '/play/text'
-  },
-  {
-    name: 'quote',
-    verboseName: 'Quote',
-    path: '/play/quote'
-  },
-  {
-    name: 'dictionary',
-    verboseName: 'Dictionary',
-    path: '/play/dictionary'
-  },
-];
-
-
-const githubProvider = new firebase.auth.GithubAuthProvider();
-
-export const authProviders: AuthProvider[] = [
-  {
-    name: "Github",
-    provider: githubProvider
-  }
-];
+import { TypingResult } from '../types';
 
 export const typingStatsInitialState: TypingResult = {
   textId: '',
@@ -36,3 +7,6 @@ export const typingStatsInitialState: TypingResult = {
   accuracy: 100,
   finished: false
 };
+
+export * from './auth';
+export * from './game';

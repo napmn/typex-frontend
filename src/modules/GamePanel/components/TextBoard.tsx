@@ -1,11 +1,14 @@
 import React from 'react';
-import Card from '@material-ui/core/Card';
+// import Card from '@material-ui/core/Card';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 
 const useStyles = makeStyles({
   card: {
-    minHeight: '200px'
+    minHeight: '250px'
+  },
+  text: {
+    fontSize: '24px'
   }
 });
 
@@ -39,13 +42,13 @@ const TextBoard: React.FC<TextBoardProps> = ({
   }
 
   return (
-    <Card className={classes.card}>
-      <Typography component="span" color="secondary">{finishedTokens.join('')}</Typography>
-      <Typography component="span" color="secondary">{finishedPart}</Typography>
-      <Typography component="span" color="textPrimary">{erroredPart}</Typography>
-      <Typography component="span" color="primary">{unfinishedPart}</Typography>
-      <Typography component="span">{remainingTokens.join('')}</Typography>
-    </Card>
+    <div className={classes.card}>
+      <Typography className={classes.text} component="span">{finishedTokens.join('')}</Typography>
+      <Typography className={classes.text} component="span">{finishedPart}</Typography>
+      <Typography className={classes.text} component="span" color="error">{erroredPart}</Typography>
+      <Typography className={classes.text} component="span" color="primary">{unfinishedPart}</Typography>
+      <Typography className={classes.text} component="span" color="textSecondary">{remainingTokens.join('')}</Typography>
+    </div>
   );
 };
 

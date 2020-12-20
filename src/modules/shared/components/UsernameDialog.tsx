@@ -79,7 +79,7 @@ const UsernameDialog: React.FC<UsernameDialogProps> = ({
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">
-            Skip
+            Cancel
           </Button>
           <Button onClick={handleSubmit} color="primary">
             Submit

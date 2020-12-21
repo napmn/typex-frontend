@@ -3,6 +3,7 @@
 .env/*
 !.env/template.env
 .eslintcache
+.firebase/
 
 # dependencies
 /node_modules

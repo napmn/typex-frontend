@@ -18,8 +18,16 @@ export const useLoggedInUser = () => {
       if (u) {
         // refresh photo url if changed
         firebaseService.getUser(u.uid).then(data => {
-          if (data?.photoURL !== u.photoURL) {
-            firebaseService.updateUser(u.uid, { photoURL: u.photoURL!});
+          if(data) {
+            if (data?.photoURL !== u.photoURL) {
+              firebaseService.updateUser(u.uid, { photoURL: u.photoURL!});
+            }
+          } else {
+            // user is not in database
+            firebaseService.saveUser(
+              u.uid,
+              { displayName: u.displayName ?? u.email!.split('@')[0], photoURL: u.photoURL! }
+            );
           }
         });
       }

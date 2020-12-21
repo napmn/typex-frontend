@@ -34,12 +34,6 @@ const UsernameDialog: React.FC<UsernameDialogProps> = ({
   }, [username]);
 
   const handleClose = () => {
-    // user?.updateProfile({ displayName: user.email }).then(() => {
-    //   // TODO: warning alert
-    // }).catch(error => {
-    //   console.error(error);
-    //   // TODO: error alert
-    // }).finally(() => onClose());
     onClose();
   };
 
